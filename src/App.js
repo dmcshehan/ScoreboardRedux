@@ -1,125 +1,79 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { bindActionCreators }from 'redux';
+import * as playerActionCreators from './actions/player';
 import './App.css';
-
+import { connect } from 'react-redux';
 import AddLPlayerForm from './AddPlayerForm';
 import Header from './Header';
 import Player from './Player';
+import PlayerDetails from './playerDetails';
 
 
-let players = [
-  {
-    name : "Shehan Disanayake",
-    score : 31,
-    id: 1
-  },
-  {
-    name : "Jim Hoskins",
-    score : 33,
-    id: 2
-  },
-  {
-    name : "ALena Holigen",
-    score : 35,
-    id : 3
-  },
-  {
-    name : "Craig Dennis",
-    score : 37,
-    id : 4
-  },
-];
+class Scoreboard extends Component{
 
-let nextId = 5;
+  static propTypes ={
+    players : PropTypes.array.isRequired,
+  };
 
-
-
-class Application extends Component{
-
-  constructor(props){
-      super(props);
-      this.state = {
-          players : this.props.initialPlayers
-      };
-      this.onScoreChange = this.onScoreChange.bind(this);
-      this.onPlayerAdd = this.onPlayerAdd.bind(this);
-      this.onRemovePlayer = this.onRemovePlayer.bind(this);
-  }
-
-  onScoreChange(index,delta){
-    const player =  this.state.players[index];
-    if(delta === -1){
-      player.score -= 1;
-    }else if (delta === +1){
-      player.score += 1;
-    }
-
-    this.setState(player);
-  }
-
-
-  onPlayerAdd(name){
-    this.state.players.push({
-      name : name,
-      score : 0,
-      id : nextId
-    });
-
-    nextId += 1;
-    this.setState(this.state);
-  }
-
-  onRemovePlayer(index){
-    this.state.players.splice(index,1);
-    this.setState(this.state);
+  static defaultProps ={
+    title : "Scoreboard"
   }
 
   render(){
+    
+    const { players , dispatch , selectedPlayerIndex} = this.props;
+    //console.log(players);
+    const addPlayer = bindActionCreators(playerActionCreators.addPlayer,dispatch);
+    const removePlayer = bindActionCreators(playerActionCreators.removePlayer,dispatch);
+    const updatePlayerScore = bindActionCreators(playerActionCreators.updatePlayerScore,dispatch);
+    const selectPlayer = bindActionCreators(playerActionCreators.selectPlayer,dispatch);  
+
+
+    let selectedPlayer;
+    console.log(selectedPlayerIndex);
+    if(selectedPlayerIndex !== -1){
+      selectedPlayer = players[selectedPlayerIndex];
+    }
+
+
+    const playerComponent = players.map((player,index)=>{
+      return <Player
+        index={index}
+        name={player.name}
+        score={player.score}
+        key={player.name}
+        updatePlayerScore={updatePlayerScore}
+        removePlayer={removePlayer}
+        selectPlayer={selectPlayer}
+      />
+    });
+
+
     return(
       <div className="scoreboard">
-        <Header title={this.props.title} players={this.state.players}/>
+        <Header title={this.props.title} players={players}/>
         <div className="players">
-          {this.state.players.map((player,index)=>{
-            return <Player
-              onScoreChange = {function(delta){this.onScoreChange(index,delta)}.bind(this)}
-              onRemove={function(){this.onRemovePlayer(index)}.bind(this)}
-              name={player.name}
-              initialScore={player.score}
-              key={player.id} />
-            })
-          }
+          {playerComponent}
         </div>
-        <AddLPlayerForm onAdd={this.onPlayerAdd}/>
+        <AddLPlayerForm addPlayer={addPlayer}/>
+        <div className="player-detail">
+          <PlayerDetails selectedPlayer={selectedPlayer}/>
+        </div> 
       </div>
     );
   }
 
 }
 
-Application.propTypes ={
-    title : PropTypes.string,
-    initialPlayers : PropTypes.arrayOf(PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      score : PropTypes.number.isRequired,
-      id : PropTypes.number.isRequired
-    })).isRequired,
 
-  };
 
-Application.defaultProps ={
-  title : "Scoreboard"
-}
-
-class App extends Component {
-
-  render() {
-    return (
-      <div className="App">
-          <Application title="My Scoreboard" initialPlayers={players}/>
-      </div>
-    );
+const mapStateToProps = state => {
+  return {
+    players : state.players,
+    selectedPlayerIndex : state.selectedPlayerIndex
   }
-}
+};
 
 
-export default App;
+export default connect(mapStateToProps)(Scoreboard);

@@ -17,7 +17,7 @@ constructor(props){
 }
 
 onTick(){
-  console.log('on tick');
+  //console.log('on tick');
   if(this.state.running){
     let now = Date.now();
     this.setState({

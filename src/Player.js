@@ -5,12 +5,15 @@ import Counter from './Counter';
 function Player(props){
   return(
     <div className="player">
-      <div className="player-name">
-        <a className="remove-player" onClick={props.onRemove}>X</a>
+      <div className="player-name" onClick={()=> props.selectPlayer(props.index)}>
+        <a className="remove-player" onClick={ () => props.removePlayer(props.index)}>X</a>
         {props.name}
       </div>
       <div className="player-score">
-        <Counter score={props.initialScore} onChange={props.onScoreChange}/>
+        <Counter 
+          index={props.index}
+          score={props.score} 
+          updatePlayerScore={props.updatePlayerScore}/>
       </div>
     </div>
   );
@@ -18,9 +21,11 @@ function Player(props){
 
 Player.propTypes ={
   name : PropTypes.string.isRequired,
-  initialScore : PropTypes.number.isRequired,
-  onScoreChange : PropTypes.func.isRequired,
-  onRemove : PropTypes.func.isRequired
+  score : PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
+  updatePlayerScore : PropTypes.func.isRequired,
+  removePlayer : PropTypes.func.isRequired,
+  selectPlayer : PropTypes.func.isRequired
 }
 
 
